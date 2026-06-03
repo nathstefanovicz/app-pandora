@@ -1,0 +1,789 @@
+<html lang="pt-BR"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pandora • Dívidas</title>
+<style>
+  :root{
+    --bg1:#2a1b3d;
+    --bg2:#44318d;
+    --lilac:#c9b6e4;
+    --lilac-soft:#e8defb;
+    --card:#ffffff;
+    --text:#2d2240;
+    --muted:#8a7da3;
+    --green:#27ae60;
+    --green-soft:#e7f8ee;
+    --danger:#e74c3c;
+    --shadow:0 8px 30px rgba(40,20,70,.18);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Roboto,sans-serif}
+  body{
+    background:linear-gradient(160deg,var(--bg2),var(--bg1));
+    min-height:100vh;color:var(--text);padding:16px;
+  }
+  .app{max-width:480px;margin:0 auto}
+
+  header{text-align:center;color:#fff;padding:24px 0 26px}
+  header h1{font-size:30px;letter-spacing:5px;font-weight:600}
+  header p{font-size:13px;color:var(--lilac);margin-top:4px}
+
+  .card{background:var(--card);border-radius:18px;padding:18px;
+    box-shadow:var(--shadow);margin-bottom:16px}
+  .card h2{font-size:17px;margin-bottom:12px;color:var(--bg2)}
+  .card h3{font-size:14px;margin:18px 0 6px;color:var(--bg2)}
+
+  label{display:block;font-size:13px;font-weight:600;margin:10px 0 4px;color:var(--muted)}
+  input,select{
+    width:100%;padding:11px 12px;border:1.5px solid #e3dcef;border-radius:10px;
+    font-size:15px;background:#faf8ff;color:var(--text)}
+  input:focus,select:focus{outline:none;border-color:var(--bg2)}
+
+  .btn{
+    width:100%;padding:13px;border:none;border-radius:12px;font-size:15px;
+    font-weight:600;cursor:pointer;margin-top:14px;background:var(--bg2);color:#fff;
+    transition:.2s}
+  .btn:hover{background:#3a2a78}
+  .btn.green{background:var(--green)}
+  .btn.green:hover{background:#1f9551}
+  .btn.ghost{background:transparent;color:var(--bg2);border:1.5px solid var(--bg2)}
+  .btn.danger{background:var(--danger)}
+  .btn.small{width:auto;padding:8px 14px;font-size:13px;margin-top:0}
+
+  .people-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:8px}
+  .person-btn{padding:14px;border:1.5px solid #e3dcef;border-radius:12px;background:#faf8ff;
+    font-size:15px;font-weight:600;cursor:pointer;transition:.15s;color:var(--text)}
+  .person-btn:hover{border-color:var(--bg2);background:var(--lilac-soft)}
+
+  .checklist{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:6px}
+  .check-item{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1.5px solid #e3dcef;
+    border-radius:10px;background:#faf8ff;cursor:pointer;font-size:14px}
+  .check-item input{width:auto}
+  .check-item.active{border-color:var(--bg2);background:var(--lilac-soft)}
+
+  .debt{border:1.5px solid #ece6f7;border-radius:14px;padding:14px;margin-bottom:12px;background:#fdfcff}
+  .debt.paid{background:var(--green-soft);border-color:#bfe9cf}
+  .debt-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .debt-name{font-size:16px;font-weight:700}
+  .debt-val{font-size:18px;font-weight:700;color:var(--bg2);white-space:nowrap}
+  .debt-info{font-size:13px;color:var(--muted);margin:4px 0}
+  .pix-box{background:#f1ecfb;border-radius:10px;padding:10px;margin:10px 0;font-size:13px}
+  .pix-key{font-size:15px;font-weight:700;color:var(--text);word-break:break-all}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;margin-right:5px}
+  .tag.pend{background:#fdeeed;color:var(--danger)}
+  .tag.ok{background:var(--green-soft);color:var(--green)}
+  .tag.cat{background:var(--lilac-soft);color:var(--bg2)}
+
+  .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+  .tab{flex:1;min-width:58px;padding:9px 5px;text-align:center;border-radius:10px;background:#fff;
+    color:var(--bg2);font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid #e3dcef}
+  .tab.active{background:var(--bg2);color:#fff;border-color:var(--bg2)}
+
+  .topbar{display:flex;justify-content:space-between;align-items:center;color:#fff;margin-bottom:10px}
+  .topbar span{font-size:14px}
+  .topbar .acts{display:flex;gap:12px;align-items:center}
+  .link{background:none;border:none;color:var(--lilac);font-size:13px;cursor:pointer;text-decoration:underline}
+
+  .hidden{display:none}
+  .empty{text-align:center;color:var(--muted);font-size:14px;padding:20px}
+  .progress{height:8px;background:#ece6f7;border-radius:10px;overflow:hidden;margin-top:8px}
+  .progress > div{height:100%;background:var(--green);transition:.3s}
+  .pay-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;
+    border-bottom:1px solid #f0ecf8;font-size:14px}
+  .pay-row:last-child{border:none}
+  .mini{font-size:12px;color:var(--muted);margin-top:4px}
+  .copy{cursor:pointer;color:var(--bg2);font-weight:600;font-size:12px}
+  .receive-summary{background:#f1ecfb;border-radius:10px;padding:8px 10px;font-size:13px;margin:6px 0}
+  .total-geral{background:var(--bg2);color:#fff;border-radius:12px;padding:14px;font-size:16px;
+    font-weight:700;display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+  .divider{height:1px;background:#ece6f7;margin:6px 0 0}
+
+  .sync-status{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);
+    background:rgba(45,34,64,.92);color:#fff;padding:9px 18px;border-radius:22px;
+    font-size:13px;z-index:99;box-shadow:var(--shadow)}
+  .loader{text-align:center;color:#fff;padding:40px;font-size:15px}
+
+  /* MODAL SENHA */
+  .modal-bg{position:fixed;inset:0;background:rgba(20,12,35,.6);display:flex;
+    align-items:center;justify-content:center;z-index:100;padding:20px}
+  .modal{background:#fff;border-radius:18px;padding:22px;max-width:340px;width:100%;
+    box-shadow:var(--shadow)}
+  .modal h3{color:var(--bg2);font-size:18px;margin-bottom:4px}
+  .modal p{font-size:13px;color:var(--muted);margin-bottom:8px}
+  .modal .row{display:flex;gap:8px;margin-top:12px}
+  .modal .row .btn{margin-top:0}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <h1>PANDORA</h1>
+    <p>Controle de dívidas do grupo</p>
+  </header>
+
+  <!-- LOADER INICIAL -->
+  <section id="screen-loading">
+    <div class="loader">Carregando dados… 💜</div>
+  </section>
+
+  <!-- TELA 1: SELECIONAR PESSOA -->
+  <section id="screen-select" class="hidden">
+    <div class="card">
+      <h2>Quem é você?</h2>
+      <div class="people-grid" id="peopleSelect"></div>
+    </div>
+  </section>
+
+  <!-- TELA 2: USUÁRIO COMUM -->
+  <section id="screen-user" class="hidden">
+    <div class="topbar">
+      <span>Olá, <strong id="userName"></strong> 👋</span>
+      <div class="acts">
+        <button class="link" onclick="recarregar()">atualizar 🔄</button>
+        <button class="link" onclick="logout()">trocar usuário</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" data-utab="pagar">A pagar</div>
+      <div class="tab" data-utab="receber">A receber</div>
+      <div class="tab" data-utab="resumo">Resumo</div>
+    </div>
+
+    <div id="utab-pagar" class="tabpane">
+      <div class="card"><h2>Minhas dívidas</h2><div id="userDebts"></div></div>
+    </div>
+    <div id="utab-receber" class="tabpane hidden">
+      <div class="card"><h2>Dívidas a receber</h2><div id="userReceive"></div></div>
+    </div>
+    <div id="utab-resumo" class="tabpane hidden">
+      <div class="card"><h2>Resumo por categoria</h2><div id="userResumo"></div></div>
+    </div>
+  </section>
+
+  <!-- TELA 3: ADMIN (NATH) -->
+  <section id="screen-admin" class="hidden">
+    <div class="topbar">
+      <span>Painel da <strong>Nath</strong></span>
+      <div class="acts">
+        <button class="link" onclick="recarregar()">atualizar 🔄</button>
+        <button class="link" onclick="logout()">trocar usuário</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="pagar">A pagar</div>
+      <div class="tab" data-tab="receber">A receber</div>
+      <div class="tab" data-tab="cadastrar">+ Dívida</div>
+      <div class="tab" data-tab="acompanhar">Acompanhar</div>
+      <div class="tab" data-tab="resumo">Resumo</div>
+      <div class="tab" data-tab="config">Configuração</div>
+    </div>
+
+    <div id="tab-pagar" class="tabpane">
+      <div class="card"><h2>Minhas dívidas (a pagar)</h2><div id="adminMyDebts"></div></div>
+    </div>
+
+    <div id="tab-receber" class="tabpane hidden">
+      <div class="card"><h2>Dívidas a receber</h2><div id="adminReceive"></div></div>
+    </div>
+
+    <div id="tab-cadastrar" class="tabpane hidden">
+      <div class="card">
+        <h2 id="formTitle">Cadastrar dívida</h2>
+        <input type="hidden" id="editId">
+        <label>Nome da dívida</label>
+        <input id="dNome" placeholder="Ex: Treino Mari Campos">
+        <label>Categoria</label>
+        <select id="dCategoria"></select>
+        <label>Quem vai receber</label>
+        <select id="dRecebedor"></select>
+        <label>Chave Pix</label>
+        <input id="dPix" placeholder="CPF, telefone, e-mail...">
+        <label>De quem é o Pix</label>
+        <select id="dPixDe"></select>
+        <label>Valor total (R$)</label>
+        <input id="dValor" type="number" step="0.01" placeholder="150.00" oninput="atualizaIndividual()">
+        <label>Quem precisa pagar</label>
+        <div class="checklist" id="dPessoas"></div>
+        <div class="mini" id="valorIndividual">Valor individual: R$ 0,00</div>
+        <button class="btn green" onclick="salvarDivida()">Salvar dívida</button>
+        <button class="btn ghost hidden" id="cancelEdit" onclick="resetForm()">Cancelar edição</button>
+      </div>
+    </div>
+
+    <div id="tab-acompanhar" class="tabpane hidden">
+      <div class="card"><h2>Acompanhar pagamentos</h2><div id="adminTrack"></div></div>
+      <div class="card hidden" id="adminConcludedCard">
+        <h2>Concluídas ✓</h2><div id="adminConcluded"></div>
+      </div>
+    </div>
+
+    <div id="tab-resumo" class="tabpane hidden">
+      <div class="card"><h2>Resumo por categoria</h2><div id="adminResumo"></div></div>
+    </div>
+
+    <div id="tab-config" class="tabpane hidden">
+      <div class="card">
+        <h2>Configuração</h2>
+        <h3>Pessoas</h3>
+        <label>Adicionar pessoa</label>
+        <input id="newPerson" placeholder="Nome">
+        <button class="btn small" style="margin-top:10px" onclick="addPerson()">Adicionar pessoa</button>
+        <div id="peopleList" style="margin-top:14px"></div>
+        <div class="divider"></div>
+        <h3>Categorias</h3>
+        <label>Adicionar categoria</label>
+        <input id="newCat" placeholder="Ex: Treino, Evento, Viagem...">
+        <button class="btn small" style="margin-top:10px" onclick="addCat()">Adicionar categoria</button>
+        <div id="catList" style="margin-top:14px"></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- MODAL DE SENHA (NATH) -->
+<div id="senhaModal" class="modal-bg hidden">
+  <div class="modal">
+    <h3>Acesso da Nath 🔒</h3>
+    <p>Digite a senha para entrar no painel de administração.</p>
+    <input type="password" id="senhaInput" placeholder="Senha" inputmode="numeric" onkeydown="if(event.key==='Enter')confirmarSenha()">
+    <div class="row">
+      <button class="btn ghost" onclick="fecharSenha()">Cancelar</button>
+      <button class="btn" onclick="confirmarSenha()">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<div id="syncStatus" class="sync-status hidden"></div>
+
+<script>
+/* ===================== CONFIG ===================== */
+const ADMIN = "Nath";
+const SENHA_ADMIN = "200433";
+const API_URL = "https://script.google.com/macros/s/AKfycbzhZ8urltDyjHo6RnTy2SVBmNbq3rIHHc4593g-dKe8N_Fod0amU9KF8dWwUvHCjjNy/exec";
+
+/* ===================== ESTADO ===================== */
+let pessoas = [];
+let categorias = [];
+let dividas = [];
+let usuarioAtual = null;
+
+/* ===================== API (Google Sheets) ===================== */
+async function carregarDados(){
+  const res = await fetch(API_URL);
+  const data = await res.json();
+  pessoas    = Array.isArray(data.pessoas) ? data.pessoas : [];
+  categorias = Array.isArray(data.categorias) ? data.categorias : [];
+  dividas    = Array.isArray(data.dividas) ? data.dividas : [];
+  dividas.forEach(d=>{
+    if(d.concluida===undefined) d.concluida=false;
+    if(d.categoria===undefined) d.categoria="Sem categoria";
+    if(!d.pagamentos) d.pagamentos={};
+    if(!d.pessoas) d.pessoas=[];
+  });
+}
+
+let _syncTimer=null;
+function sync(){
+  setStatus('salvando…');
+  clearTimeout(_syncTimer);
+  _syncTimer = setTimeout(async ()=>{
+    try{
+      await fetch(API_URL, {
+        method:'POST',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({pessoas, categorias, dividas})
+      });
+      setStatus('salvo ✓');
+    }catch(e){
+      setStatus('⚠ erro ao salvar');
+    }
+  }, 400);
+}
+
+function save(){ sync(); }
+
+function setStatus(msg){
+  const el=document.getElementById('syncStatus');
+  if(!el) return;
+  if(!msg){ el.classList.add('hidden'); return; }
+  el.textContent=msg; el.classList.remove('hidden');
+  if(msg==='salvo ✓'){ clearTimeout(el._t); el._t=setTimeout(()=>el.classList.add('hidden'),1200); }
+}
+
+/* ===================== HELPERS ===================== */
+const money = v => "R$ " + Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const valorInd = d => d.pessoas.length ? d.valorTotal / d.pessoas.length : 0;
+function show(id){ document.querySelectorAll('section').forEach(s=>s.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
+
+function resetTabs(scope){
+  const tabs = document.querySelectorAll(scope+' .tab');
+  const panes = document.querySelectorAll(scope+' .tabpane');
+  tabs.forEach((t,i)=>t.classList.toggle('active', i===0));
+  panes.forEach((p,i)=>p.classList.toggle('hidden', i!==0));
+}
+
+/* ===================== TELA SELECIONAR ===================== */
+function renderPeopleSelect(){
+  const box = document.getElementById('peopleSelect');
+  box.innerHTML = '';
+  pessoas.forEach(p=>{
+    const b = document.createElement('button');
+    b.className = 'person-btn';
+    b.textContent = p;
+    b.onclick = ()=> selecionar(p);
+    box.appendChild(b);
+  });
+}
+
+/* ----- senha ----- */
+function abrirSenha(){
+  document.getElementById('senhaInput').value='';
+  document.getElementById('senhaModal').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('senhaInput').focus(),100);
+}
+function fecharSenha(){
+  document.getElementById('senhaModal').classList.add('hidden');
+}
+function confirmarSenha(){
+  const v = document.getElementById('senhaInput').value.trim();
+  if(v !== SENHA_ADMIN){ alert('Senha incorreta 🔒'); return; }
+  fecharSenha();
+  entrarComo(ADMIN);
+}
+
+function selecionar(p){
+  if(p === ADMIN){
+    abrirSenha();
+    return;
+  }
+  entrarComo(p);
+}
+
+async function entrarComo(p){
+  setStatus('carregando…');
+  try{ await carregarDados(); }catch(e){}
+  setStatus('');
+  usuarioAtual = p;
+  if(p === ADMIN){
+    show('screen-admin');
+    resetTabs('#screen-admin');
+    renderAdmin();
+  }else{
+    show('screen-user');
+    resetTabs('#screen-user');
+    document.getElementById('userName').textContent = p;
+    renderUserDebts();
+    renderUserReceive();
+    renderResumo('userResumo');
+  }
+}
+
+function logout(){
+  usuarioAtual = null;
+  show('screen-select');
+}
+
+async function recarregar(){
+  setStatus('atualizando…');
+  try{ await carregarDados(); }catch(e){ setStatus('⚠ erro'); return; }
+  setStatus('atualizado ✓');
+  setTimeout(()=>setStatus(''),1000);
+  if(usuarioAtual===ADMIN){ renderAdmin(); }
+  else if(usuarioAtual){ renderUserDebts(); renderUserReceive(); renderResumo('userResumo'); }
+}
+
+/* ===================== CARD: DÍVIDA A PAGAR ===================== */
+function debtCardUser(d, pessoa){
+  const pago = d.pagamentos[pessoa];
+  const ind = valorInd(d);
+  return `
+    <div class="debt ${pago?'paid':''}">
+      <div class="debt-top">
+        <div class="debt-name">${d.nome}</div>
+        <div class="debt-val">${money(ind)}</div>
+      </div>
+      <div style="margin:4px 0"><span class="tag cat">${d.categoria}</span><span class="tag ${pago?'ok':'pend'}">${pago?'PAGO':'PENDENTE'}</span></div>
+      <div class="debt-info">Recebe: <b>${d.recebedor}</b> • Total ${money(d.valorTotal)} ÷ ${d.pessoas.length}</div>
+      <div class="pix-box">
+        Pix de <b>${d.pixDe}</b>:
+        <div class="pix-key">${d.pix} <span class="copy" onclick="copiar('${d.pix}')">copiar</span></div>
+      </div>
+      ${pago
+        ? `<button class="btn ghost" onclick="marcar(${d.id},'${pessoa}',false)">Desfazer pagamento</button>`
+        : `<button class="btn green" onclick="marcar(${d.id},'${pessoa}',true)">Já paguei ✓</button>`}
+    </div>`;
+}
+
+/* ===================== CARD: ACOMPANHAMENTO ===================== */
+function trackCard(d, opts={}){
+  const {actions=false, conclude=false} = opts;
+  const ind = valorInd(d);
+  const total = d.pessoas.length;
+  const pagos = d.pessoas.filter(p=>d.pagamentos[p]).length;
+  const pct = total ? Math.round(pagos/total*100) : 0;
+  const recebido = pagos * ind;
+  const falta = d.valorTotal - recebido;
+  const allPaid = total>0 && pagos===total;
+
+  const rows = d.pessoas.map(p=>`
+    <div class="pay-row">
+      <span>${p}</span>
+      <label class="copy">
+        <input type="checkbox" ${d.pagamentos[p]?'checked':''} ${d.concluida?'disabled':''}
+          onchange="marcar(${d.id},'${p}',this.checked)"> ${d.pagamentos[p]?'pago':'pendente'}
+      </label>
+    </div>`).join('');
+
+  let buttons = '';
+  if(conclude){
+    if(d.concluida){
+      buttons += `<button class="btn small ghost" onclick="reabrirDivida(${d.id})">Reabrir</button>`;
+    }else if(allPaid){
+      buttons += `<button class="btn small green" onclick="concluirDivida(${d.id})">Concluir dívida ✓</button>`;
+    }
+  }
+  if(actions){
+    buttons += `<button class="btn small ghost" onclick="editarDivida(${d.id})">Editar</button>`;
+    buttons += `<button class="btn small danger" onclick="excluirDivida(${d.id})">Excluir</button>`;
+  }
+  const buttonsHtml = buttons ? `<div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">${buttons}</div>` : '';
+
+  const statusTag = d.concluida
+    ? `<span class="tag ok">CONCLUÍDA ✓</span>`
+    : (allPaid ? `<span class="tag ok">TODOS PAGARAM</span>` : `<span class="tag pend">EM ANDAMENTO</span>`);
+
+  return `
+    <div class="debt ${d.concluida?'paid':''}">
+      <div class="debt-top">
+        <div class="debt-name">${d.nome}</div>
+        <div class="debt-val">${money(ind)}</div>
+      </div>
+      <div style="margin:4px 0"><span class="tag cat">${d.categoria}</span>${statusTag}</div>
+      <div class="debt-info">Recebe ${d.recebedor} • Total ${money(d.valorTotal)} • ${pagos}/${total} pagaram</div>
+      <div class="receive-summary">Recebido: <b>${money(recebido)}</b> • Falta receber: <b>${money(falta)}</b></div>
+      <div class="progress"><div style="width:${pct}%"></div></div>
+      <div style="margin:10px 0">${rows}</div>
+      ${buttonsHtml}
+    </div>`;
+}
+
+/* ===================== RESUMO POR CATEGORIA ===================== */
+function renderResumo(targetId){
+  const totais = {};
+  categorias.forEach(c=> totais[c] = {total:0, count:0, conc:0});
+  dividas.forEach(d=>{
+    const c = d.categoria || 'Sem categoria';
+    if(!totais[c]) totais[c] = {total:0, count:0, conc:0};
+    totais[c].total += d.valorTotal;
+    totais[c].count += 1;
+    if(d.concluida) totais[c].conc += 1;
+  });
+  const entries = Object.entries(totais);
+  let geral = 0; entries.forEach(([,v])=> geral += v.total);
+  const box = document.getElementById(targetId);
+  if(!entries.length){ box.innerHTML='<div class="empty">Nenhuma dívida ainda.</div>'; return; }
+  box.innerHTML = entries.map(([c,v])=>`
+    <div class="debt">
+      <div class="debt-top">
+        <div class="debt-name">${c}</div>
+        <div class="debt-val">${money(v.total)}</div>
+      </div>
+      <div class="debt-info">${v.count} dívida(s) • ${v.conc} concluída(s)</div>
+    </div>`).join('') +
+    `<div class="total-geral"><span>Total geral</span><span>${money(geral)}</span></div>`;
+}
+
+/* ===================== VISÃO USUÁRIO ===================== */
+function renderUserDebts(){
+  const box = document.getElementById('userDebts');
+  const minhas = dividas.filter(d=>d.pessoas.includes(usuarioAtual) && !d.concluida);
+  box.innerHTML = minhas.length ? minhas.map(d=>debtCardUser(d, usuarioAtual)).join('')
+    : '<div class="empty">Nenhuma dívida por aqui 🎉</div>';
+}
+function renderUserReceive(){
+  const box = document.getElementById('userReceive');
+  const aReceber = dividas.filter(d=>d.recebedor===usuarioAtual && !d.concluida);
+  box.innerHTML = aReceber.length ? aReceber.map(d=>trackCard(d,{})).join('')
+    : '<div class="empty">Nenhuma dívida a receber 💜</div>';
+}
+
+function marcar(id, pessoa, valor){
+  const d = dividas.find(x=>x.id===id);
+  d.pagamentos[pessoa] = valor;
+  save();
+  if(usuarioAtual===ADMIN){ renderAdmin(); }
+  else { renderUserDebts(); renderUserReceive(); renderResumo('userResumo'); }
+}
+
+function copiar(txt){
+  navigator.clipboard.writeText(txt).then(()=>alert('Pix copiado!'));
+}
+
+/* ===================== PAINEL ADMIN ===================== */
+function renderAdmin(){
+  const my = document.getElementById('adminMyDebts');
+  const minhas = dividas.filter(d=>d.pessoas.includes(ADMIN) && !d.concluida);
+  my.innerHTML = minhas.length ? minhas.map(d=>debtCardUser(d, ADMIN)).join('')
+    : '<div class="empty">Você não tem dívidas a pagar.</div>';
+
+  const rec = document.getElementById('adminReceive');
+  const aReceber = dividas.filter(d=>d.recebedor===ADMIN && !d.concluida);
+  rec.innerHTML = aReceber.length ? aReceber.map(d=>trackCard(d,{conclude:true})).join('')
+    : '<div class="empty">Nenhuma dívida a receber.</div>';
+
+  preencherSelects();
+  renderChecklist();
+  renderTrack();
+  renderResumo('adminResumo');
+  renderConfig();
+}
+
+document.querySelectorAll('#screen-admin .tab').forEach(t=>{
+  t.onclick = ()=>{
+    document.querySelectorAll('#screen-admin .tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.querySelectorAll('#screen-admin .tabpane').forEach(p=>p.classList.add('hidden'));
+    document.getElementById('tab-'+t.dataset.tab).classList.remove('hidden');
+  };
+});
+document.querySelectorAll('#screen-user .tab').forEach(t=>{
+  t.onclick = ()=>{
+    document.querySelectorAll('#screen-user .tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.querySelectorAll('#screen-user .tabpane').forEach(p=>p.classList.add('hidden'));
+    document.getElementById('utab-'+t.dataset.utab).classList.remove('hidden');
+  };
+});
+
+function preencherSelects(){
+  const opts = pessoas.map(p=>`<option value="${p}">${p}</option>`).join('');
+  document.getElementById('dRecebedor').innerHTML = opts;
+  document.getElementById('dPixDe').innerHTML = opts;
+  document.getElementById('dCategoria').innerHTML =
+    categorias.map(c=>`<option value="${c}">${c}</option>`).join('');
+}
+
+function renderChecklist(selecionadas=[]){
+  const box = document.getElementById('dPessoas');
+  box.innerHTML = '';
+  pessoas.forEach(p=>{
+    const checked = selecionadas.includes(p);
+    const div = document.createElement('label');
+    div.className = 'check-item' + (checked?' active':'');
+    div.innerHTML = `<input type="checkbox" value="${p}" ${checked?'checked':''}> ${p}`;
+    div.querySelector('input').onchange = e=>{
+      div.classList.toggle('active', e.target.checked);
+      atualizaIndividual();
+    };
+    box.appendChild(div);
+  });
+  atualizaIndividual();
+}
+
+function getSelecionadas(){
+  return [...document.querySelectorAll('#dPessoas input:checked')].map(i=>i.value);
+}
+
+function atualizaIndividual(){
+  const valor = parseFloat(document.getElementById('dValor').value) || 0;
+  const qtd = getSelecionadas().length;
+  const ind = qtd ? valor/qtd : 0;
+  document.getElementById('valorIndividual').textContent =
+    `Valor individual: ${money(ind)} (${qtd} pessoa${qtd!==1?'s':''})`;
+}
+
+function salvarDivida(){
+  const nome = document.getElementById('dNome').value.trim();
+  const categoria = document.getElementById('dCategoria').value;
+  const recebedor = document.getElementById('dRecebedor').value;
+  const pix = document.getElementById('dPix').value.trim();
+  const pixDe = document.getElementById('dPixDe').value;
+  const valorTotal = parseFloat(document.getElementById('dValor').value) || 0;
+  const selec = getSelecionadas();
+  const editId = document.getElementById('editId').value;
+
+  if(!nome || !categoria || !pix || valorTotal<=0 || selec.length===0){
+    alert('Preencha nome, categoria, pix, valor e selecione ao menos 1 pessoa.');
+    return;
+  }
+
+  if(editId){
+    const d = dividas.find(x=>x.id==editId);
+    const novosPag = {};
+    selec.forEach(p=> novosPag[p] = d.pagamentos[p] || false);
+    Object.assign(d,{nome,categoria,recebedor,pix,pixDe,valorTotal,pessoas:selec,pagamentos:novosPag});
+  }else{
+    const pagamentos = {};
+    selec.forEach(p=>pagamentos[p]=false);
+    dividas.push({id:Date.now(),nome,categoria,recebedor,pix,pixDe,valorTotal,pessoas:selec,pagamentos,concluida:false});
+  }
+  save();
+  resetForm();
+  alert('Dívida salva!');
+  renderAdmin();
+  document.querySelector('#screen-admin .tab[data-tab="acompanhar"]').click();
+}
+
+function resetForm(){
+  document.getElementById('editId').value='';
+  document.getElementById('dNome').value='';
+  document.getElementById('dPix').value='';
+  document.getElementById('dValor').value='';
+  document.getElementById('formTitle').textContent='Cadastrar dívida';
+  document.getElementById('cancelEdit').classList.add('hidden');
+  renderChecklist();
+}
+
+function editarDivida(id){
+  const d = dividas.find(x=>x.id===id);
+  document.getElementById('editId').value = d.id;
+  document.getElementById('dNome').value = d.nome;
+  if(!categorias.includes(d.categoria)){
+    const o=document.createElement('option');o.value=d.categoria;o.textContent=d.categoria;
+    document.getElementById('dCategoria').appendChild(o);
+  }
+  document.getElementById('dCategoria').value = d.categoria;
+  document.getElementById('dRecebedor').value = d.recebedor;
+  document.getElementById('dPix').value = d.pix;
+  document.getElementById('dPixDe').value = d.pixDe;
+  document.getElementById('dValor').value = d.valorTotal;
+  renderChecklist(d.pessoas);
+  document.getElementById('formTitle').textContent='Editar dívida';
+  document.getElementById('cancelEdit').classList.remove('hidden');
+  document.querySelector('#screen-admin .tab[data-tab="cadastrar"]').click();
+}
+
+function excluirDivida(id){
+  if(!confirm('Excluir esta dívida?')) return;
+  dividas = dividas.filter(d=>d.id!==id);
+  save();
+  renderAdmin();
+}
+
+function concluirDivida(id){
+  const d = dividas.find(x=>x.id===id);
+  if(!d.pessoas.every(p=>d.pagamentos[p])){ alert('Ainda há pessoas que não pagaram esta dívida.'); return; }
+  if(!confirm('Concluir esta dívida? Ela sairá das listas ativas e irá para "Concluídas".')) return;
+  d.concluida = true;
+  save();
+  renderAdmin();
+}
+
+function reabrirDivida(id){
+  const d = dividas.find(x=>x.id===id);
+  d.concluida = false;
+  save();
+  renderAdmin();
+}
+
+function renderTrack(){
+  const box = document.getElementById('adminTrack');
+  const ativas = dividas.filter(d=>!d.concluida);
+  box.innerHTML = ativas.length ? ativas.map(d=>trackCard(d,{actions:true, conclude:true})).join('')
+    : '<div class="empty">Nenhuma dívida ativa.</div>';
+
+  const concCard = document.getElementById('adminConcludedCard');
+  const conc = document.getElementById('adminConcluded');
+  const concluidas = dividas.filter(d=>d.concluida);
+  if(concluidas.length){
+    concCard.classList.remove('hidden');
+    conc.innerHTML = concluidas.map(d=>trackCard(d,{actions:true, conclude:true})).join('');
+  }else{
+    concCard.classList.add('hidden');
+  }
+}
+
+function renderConfig(){ renderPeopleList(); renderCatList(); }
+
+function renderCatList(){
+  const list = document.getElementById('catList');
+  list.innerHTML = categorias.length ? categorias.map(c=>`
+    <div class="pay-row">
+      <span>${c}</span>
+      <button class="copy" style="color:var(--danger)" onclick="removeCat('${c}')">remover</button>
+    </div>`).join('') : '<div class="empty">Nenhuma categoria.</div>';
+}
+
+function addCat(){
+  const inp = document.getElementById('newCat');
+  const nome = inp.value.trim();
+  if(!nome) return;
+  if(categorias.includes(nome)){ alert('Categoria já existe!'); return; }
+  categorias.push(nome);
+  save();
+  inp.value='';
+  renderAdmin();
+}
+
+function removeCat(nome){
+  const emUso = dividas.filter(d=>d.categoria===nome).length;
+  if(emUso>0){
+    if(!confirm(`Há ${emUso} dívida(s) nesta categoria. Elas continuarão com o nome "${nome}" no histórico. Remover mesmo assim?`)) return;
+  }else{
+    if(!confirm('Remover categoria "'+nome+'"?')) return;
+  }
+  categorias = categorias.filter(c=>c!==nome);
+  save();
+  renderAdmin();
+}
+
+function addPerson(){
+  const inp = document.getElementById('newPerson');
+  const nome = inp.value.trim();
+  if(!nome) return;
+  if(pessoas.includes(nome)){ alert('Já existe!'); return; }
+  pessoas.push(nome);
+  save();
+  inp.value='';
+  renderAdmin();
+}
+
+function removePerson(nome){
+  if(nome===ADMIN){ alert('Não dá pra remover a admin 😅'); return; }
+  if(!confirm('Remover '+nome+'?')) return;
+  pessoas = pessoas.filter(p=>p!==nome);
+  save();
+  renderAdmin();
+}
+
+function renderPeopleList(){
+  const box = document.getElementById('peopleList');
+  box.innerHTML = pessoas.map(p=>`
+    <div class="pay-row">
+      <span>${p}</span>
+      ${p!==ADMIN?`<button class="copy" style="color:var(--danger)" onclick="removePerson('${p}')">remover</button>`:''}
+    </div>`).join('');
+}
+
+/* ===================== INIT ===================== */
+async function init(){
+  setStatus('carregando…');
+  try{
+    await carregarDados();
+  }catch(e){
+    setStatus('⚠ erro ao carregar');
+    alert('Não consegui carregar os dados.\nVerifique se a API_URL está correta e se o app foi publicado para "Qualquer pessoa".');
+  }
+  let precisaSync=false;
+  if(!pessoas.length){ pessoas=["Cami","Gabe","Mar","Tati","Clara","Nath","Fer","Ray","Miwa"]; precisaSync=true; }
+  if(!pessoas.includes("Miwa")){ pessoas.push("Miwa"); precisaSync=true; }
+  if(!categorias.length){ categorias=["Treino","Evento","Viagem","Outros"]; precisaSync=true; }
+  if(!dividas.length){
+    const todos=[...pessoas];
+    const pag={}; todos.forEach(p=>pag[p]=false);
+    dividas=[{id:Date.now(),nome:"Treino Mari Campos",categoria:"Treino",recebedor:"Nath",
+      pix:"09045246988",pixDe:"Nath",valorTotal:150,pessoas:todos,pagamentos:pag,concluida:false}];
+    precisaSync=true;
+  }
+  if(precisaSync) sync();
+  setStatus('');
+  renderPeopleSelect();
+  show('screen-select');
+}
+init();
+</script>
+
+</body></html>
