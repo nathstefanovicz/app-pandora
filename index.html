@@ -54,6 +54,12 @@
     font-size:15px;font-weight:600;cursor:pointer;transition:.15s;color:var(--text)}
   .person-btn:hover{border-color:var(--bg2);background:var(--lilac-soft)}
 
+  /* FILTRO A PAGAR */
+  .filter-bar{display:flex;gap:6px;margin-bottom:12px}
+  .filter-btn{flex:1;padding:8px;border:1.5px solid #e3dcef;border-radius:9px;background:#faf8ff;
+    color:var(--bg2);font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+  .filter-btn.active{background:var(--bg2);color:#fff;border-color:var(--bg2)}
+
   /* DROPDOWN PESSOAS (cadastro) */
   .dropdown-toggle{width:100%;padding:11px 12px;border:1.5px solid #e3dcef;border-radius:10px;
     background:#faf8ff;color:var(--text);font-size:14px;cursor:pointer;display:flex;
@@ -175,7 +181,15 @@
     </div>
 
     <div id="utab-pagar" class="tabpane">
-      <div class="card"><h2>Minhas dívidas</h2><div id="userDebts"></div></div>
+      <div class="card">
+        <h2>Minhas dívidas</h2>
+        <div class="filter-bar" id="userFilter">
+          <button class="filter-btn active" data-f="todas">Todas</button>
+          <button class="filter-btn" data-f="pendentes">Pendentes</button>
+          <button class="filter-btn" data-f="pagas">Pagas</button>
+        </div>
+        <div id="userDebts"></div>
+      </div>
     </div>
     <div id="utab-receber" class="tabpane hidden">
       <div class="card"><h2>Dívidas a receber</h2><div id="userReceive"></div></div>
@@ -205,7 +219,15 @@
     </div>
 
     <div id="tab-pagar" class="tabpane">
-      <div class="card"><h2>Minhas dívidas (a pagar)</h2><div id="adminMyDebts"></div></div>
+      <div class="card">
+        <h2>Minhas dívidas (a pagar)</h2>
+        <div class="filter-bar" id="adminFilter">
+          <button class="filter-btn active" data-f="todas">Todas</button>
+          <button class="filter-btn" data-f="pendentes">Pendentes</button>
+          <button class="filter-btn" data-f="pagas">Pagas</button>
+        </div>
+        <div id="adminMyDebts"></div>
+      </div>
     </div>
 
     <div id="tab-receber" class="tabpane hidden">
@@ -305,6 +327,8 @@ let pessoas = [];
 let categorias = [];
 let dividas = [];
 let usuarioAtual = null;
+let filtroUser = 'todas';
+let filtroAdmin = 'todas';
 
 /* ===================== API (Google Sheets) ===================== */
 async function carregarDados(){
@@ -558,17 +582,32 @@ function renderResumo(targetId){
 }
 
 /* ===================== VISÃO USUÁRIO ===================== */
+function aplicaFiltro(lista, filtro, pessoa){
+  if(filtro==='pendentes') return lista.filter(d=>!d.pagamentos[pessoa]);
+  if(filtro==='pagas')     return lista.filter(d=>d.pagamentos[pessoa]);
+  return lista;
+}
+
 function renderUserDebts(){
   const box = document.getElementById('userDebts');
-  const minhas = dividas.filter(d=>d.pessoas.includes(usuarioAtual) && !d.concluida);
+  let minhas = dividas.filter(d=>d.pessoas.includes(usuarioAtual) && !d.concluida);
+  minhas = aplicaFiltro(minhas, filtroUser, usuarioAtual);
   box.innerHTML = minhas.length ? minhas.map(d=>debtCardUser(d, usuarioAtual)).join('')
-    : '<div class="empty">Nenhuma dívida por aqui 🎉</div>';
+    : '<div class="empty">Nenhuma dívida nesse filtro 🎉</div>';
 }
 function renderUserReceive(){
   const box = document.getElementById('userReceive');
   const aReceber = dividas.filter(d=>d.recebedor===usuarioAtual && !d.concluida);
   box.innerHTML = aReceber.length ? aReceber.map(d=>trackCard(d,{})).join('')
     : '<div class="empty">Nenhuma dívida a receber 💜</div>';
+}
+
+function renderAdminMyDebts(){
+  const my = document.getElementById('adminMyDebts');
+  let minhas = dividas.filter(d=>d.pessoas.includes(ADMIN) && !d.concluida);
+  minhas = aplicaFiltro(minhas, filtroAdmin, ADMIN);
+  my.innerHTML = minhas.length ? minhas.map(d=>debtCardUser(d, ADMIN)).join('')
+    : '<div class="empty">Nenhuma dívida nesse filtro.</div>';
 }
 
 function marcar(id, pessoa, valor){
@@ -585,10 +624,7 @@ function copiar(txt){
 
 /* ===================== PAINEL ADMIN ===================== */
 function renderAdmin(){
-  const my = document.getElementById('adminMyDebts');
-  const minhas = dividas.filter(d=>d.pessoas.includes(ADMIN) && !d.concluida);
-  my.innerHTML = minhas.length ? minhas.map(d=>debtCardUser(d, ADMIN)).join('')
-    : '<div class="empty">Você não tem dívidas a pagar.</div>';
+  renderAdminMyDebts();
 
   const rec = document.getElementById('adminReceive');
   const aReceber = dividas.filter(d=>d.recebedor===ADMIN && !d.concluida);
@@ -616,6 +652,24 @@ document.querySelectorAll('#screen-user .tab').forEach(t=>{
     t.classList.add('active');
     document.querySelectorAll('#screen-user .tabpane').forEach(p=>p.classList.add('hidden'));
     document.getElementById('utab-'+t.dataset.utab).classList.remove('hidden');
+  };
+});
+
+/* ----- filtros A pagar ----- */
+document.querySelectorAll('#userFilter .filter-btn').forEach(b=>{
+  b.onclick = ()=>{
+    document.querySelectorAll('#userFilter .filter-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    filtroUser = b.dataset.f;
+    renderUserDebts();
+  };
+});
+document.querySelectorAll('#adminFilter .filter-btn').forEach(b=>{
+  b.onclick = ()=>{
+    document.querySelectorAll('#adminFilter .filter-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    filtroAdmin = b.dataset.f;
+    renderAdminMyDebts();
   };
 });
 
