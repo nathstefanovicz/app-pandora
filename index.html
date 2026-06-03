@@ -385,7 +385,6 @@ function resetTabs(scope){
   panes.forEach((p,i)=>p.classList.toggle('hidden', i!==0));
 }
 
-/* abre/fecha a área logo abaixo do botão */
 function toggleCollapse(btn){
   btn.classList.toggle('open');
   const body = btn.nextElementSibling;
@@ -441,6 +440,8 @@ async function entrarComo(p){
   }else{
     show('screen-user');
     resetTabs('#screen-user');
+    filtroUser = 'todas';
+    document.querySelectorAll('#userFilter .filter-btn').forEach((x,i)=>x.classList.toggle('active', i===0));
     document.getElementById('userName').textContent = p;
     renderUserDebts();
     renderUserReceive();
@@ -450,6 +451,7 @@ async function entrarComo(p){
 
 function logout(){
   usuarioAtual = null;
+  renderPeopleSelect();   // garante lista atualizada ao voltar
   show('screen-select');
 }
 
@@ -581,13 +583,14 @@ function renderResumo(targetId){
     `<div class="total-geral"><span>Total geral</span><span>${money(geral)}</span></div>`;
 }
 
-/* ===================== VISÃO USUÁRIO ===================== */
+/* ===================== FILTRO ===================== */
 function aplicaFiltro(lista, filtro, pessoa){
   if(filtro==='pendentes') return lista.filter(d=>!d.pagamentos[pessoa]);
   if(filtro==='pagas')     return lista.filter(d=>d.pagamentos[pessoa]);
   return lista;
 }
 
+/* ===================== VISÃO USUÁRIO ===================== */
 function renderUserDebts(){
   const box = document.getElementById('userDebts');
   let minhas = dividas.filter(d=>d.pessoas.includes(usuarioAtual) && !d.concluida);
@@ -636,6 +639,7 @@ function renderAdmin(){
   renderTrack();
   renderResumo('adminResumo');
   renderConfig();
+  renderPeopleSelect();   // <<< CORREÇÃO: mantém a tela de seleção sempre atualizada
 }
 
 document.querySelectorAll('#screen-admin .tab').forEach(t=>{
@@ -885,7 +889,8 @@ function addPerson(){
   pessoas.push(nome);
   save();
   inp.value='';
-  renderAdmin();
+  renderAdmin();          // já chama renderPeopleSelect() internamente
+  alert(nome + ' adicionada! Já aparece na tela "Quem é você?" 💜');
 }
 
 function removePerson(nome){
